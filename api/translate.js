@@ -1,9 +1,7 @@
-// api/translate.js
 import { kv } from '@vercel/kv';
 import { scrapeTranslations } from '../lib/scraper.js';
 
 export default async function handler(req, res) {
-  // Only allow GET
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -14,7 +12,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Try to get from cache
     const cacheKey = `translation:${word.toLowerCase()}`;
     const cached = await kv.get(cacheKey);
 
@@ -26,10 +23,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2. Not in cache → scrape
     const translations = await scrapeTranslations(word);
-
-    // 3. Store in KV (expire after 7 days, for example)
     await kv.set(cacheKey, translations, { ex: 60 * 60 * 24 * 7 });
 
     return res.status(200).json({
