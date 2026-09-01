@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Madura Dictionary API</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(145deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 40px;
+      padding: 40px 30px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    h1 {
+      color: #fff;
+      font-weight: 600;
+      font-size: 2.2rem;
+      text-align: center;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    h1 i {
+      color: #f7c948;
+      margin-right: 12px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.95rem;
+      margin-bottom: 30px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 18px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 16px 22px;
+      border: none;
+      border-radius: 60px;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      font-size: 1.1rem;
+      outline: none;
+      transition: 0.3s;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .search-box input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 300;
+    }
+
+    .search-box input:focus {
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 2px #f7c948, inset 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .search-box button {
+      padding: 16px 30px;
+      border: none;
+      border-radius: 60px;
+      background: linear-gradient(135deg, #f7c948, #f5a623);
+      color: #1a1a2e;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 20px rgba(247, 201, 72, 0.25);
+    }
+
+    .search-box button:hover {
+      transform: scale(1.03);
+      box-shadow: 0 12px 28px rgba(247, 201, 72, 0.4);
+    }
+
+    .search-box button:active {
+      transform: scale(0.97);
+    }
+
+    .search-box button i {
+      font-size: 1.2rem;
+    }
+
+    /* Results area */
+    .results {
+      margin-top: 20px;
+      min-height: 100px;
+    }
+
+    .loading {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.1rem;
+      padding: 30px 0;
+    }
+
+    .loading .spinner {
+      width: 28px;
+      height: 28px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top: 4px solid #f7c948;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error {
+      display: none;
+      background: rgba(255, 70, 70, 0.15);
+      border-left: 4px solid #ff4d4d;
+      padding: 16px 20px;
+      border-radius: 12px;
+      color: #ffb3b3;
+      margin: 10px 0;
+    }
+
+    .result-card {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(4px);
+      transition: 0.2s;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 12px 20px;
+    }
+
+    .result-card:hover {
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .result-card .english {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .result-card .english i {
+      color: #4a9eff;
+      font-size: 1rem;
+    }
+
+    .result-card .sinhala {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #f7c948;
+      direction: ltr;
+      font-family: 'Noto Sans Sinhala', 'Segoe UI', sans-serif;
+    }
+
+    .result-card .type {
+      font-size: 0.8rem;
+      background: rgba(247, 201, 72, 0.15);
+      color: #f7c948;
+      padding: 2px 12px;
+      border-radius: 40px;
+      font-weight: 500;
+      text-transform: lowercase;
+      margin-left: auto;
+    }
+
+    .result-card .badge {
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.4);
+      padding: 2px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .no-results {
+      display: none;
+      color: rgba(255, 255, 255, 0.5);
+      text-align: center;
+      padding: 40px 0;
+      font-size: 1.1rem;
+    }
+
+    .source-info {
+      text-align: right;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.25);
+      margin-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 16px;
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    .footer span {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 500px) {
+      .container {
+        padding: 24px 18px;
+      }
+      .search-box {
+        flex-direction: column;
+      }
+      .search-box button {
+        justify-content: center;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      .result-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+      .result-card .type {
+        margin-left: 0;
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      <i class="fas fa-book-open"></i> Madura Dictionary
+    </h1>
+    <div class="subtitle">
+      <i class="fas fa-globe-asia" style="margin-right: 8px;"></i>
+      English ↔ Sinhala · powered by Vercel KV
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+      <input type="text" id="wordInput" placeholder="Type a word… (e.g., dance, නැටුම)" />
+      <button id="searchBtn">
+        <i class="fas fa-search"></i> Search
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loadingIndicator">
+      <div class="spinner"></div>
+      <span>Fetching translations…</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error" id="errorMessage">
+      <i class="fas fa-exclamation-circle" style="margin-right: 12px;"></i>
+      <span id="errorText">Something went wrong.</span>
+    </div>
+
+    <!-- Results container -->
+    <div class="results" id="resultsContainer">
+      <div class="no-results" id="noResults">
+        <i class="fas fa-search" style="font-size: 2rem; display: block; margin-bottom: 12px; opacity: 0.4;"></i>
+        Enter a word to see translations
+      </div>
+      <!-- Dynamic cards will be inserted here -->
+      <div id="resultList"></div>
+    </div>
+
+    <div class="source-info" id="sourceInfo"></div>
+    <div class="footer">
+      © <span>Lewz Kithuldeniya</span> 2026 &nbsp;·&nbsp; All rights reserved
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const API_BASE = 'https://my-dictionary-api.vercel.app';
+      const ENDPOINT = '/api/translate';
+
+      const wordInput = document.getElementById('wordInput');
+      const searchBtn = document.getElementById('searchBtn');
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const errorMessage = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+      const resultList = document.getElementById('resultList');
+      const noResults = document.getElementById('noResults');
+      const sourceInfo = document.getElementById('sourceInfo');
+
+      // Helper to clear previous results
+      function clearResults() {
+        resultList.innerHTML = '';
+        noResults.style.display = 'none';
+        sourceInfo.textContent = '';
+        errorMessage.style.display = 'none';
+      }
+
+      // Show loading
+      function setLoading(loading) {
+        loadingIndicator.style.display = loading ? 'flex' : 'none';
+      }
+
+      // Display error
+      function showError(msg) {
+        errorText.textContent = msg || 'Failed to fetch translations. Please try again.';
+        errorMessage.style.display = 'flex';
+        setLoading(false);
+      }
+
+      // Render translation cards
+      function renderTranslations(data) {
+        clearResults();
+        setLoading(false);
+
+        if (!data.translations || data.translations.length === 0) {
+          noResults.style.display = 'block';
+          noResults.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size: 2rem; display: block; margin-bottom: 12px; opacity: 0.5;"></i> No translations found for “${data.word}”`;
+          return;
+        }
+
+        // Show source
+        const sourceText = data.source === 'cache' ? '⚡ Cached' : '🌐 Fresh from Madura Online';
+        sourceInfo.textContent = `Source: ${sourceText}`;
+
+        // Build cards
+        data.translations.forEach(trans => {
+          const card = document.createElement('div');
+          card.className = 'result-card';
+
+          const engDiv = document.createElement('div');
+          engDiv.className = 'english';
+          engDiv.innerHTML = `<i class="fas fa-language"></i> ${trans.english || '—'}`;
+
+          const sinDiv = document.createElement('div');
+          sinDiv.className = 'sinhala';
+          sinDiv.textContent = trans.sinhala || '—';
+
+          const typeSpan = document.createElement('span');
+          typeSpan.className = 'type';
+          typeSpan.textContent = trans.type || '';
+
+          card.appendChild(engDiv);
+          card.appendChild(sinDiv);
+          if (trans.type) card.appendChild(typeSpan);
+
+          resultList.appendChild(card);
+        });
+      }
+
+      // Perform search
+      async function performSearch(word) {
+        if (!word || word.trim() === '') {
+          showError('Please enter a word.');
+          return;
+        }
+
+        const trimmed = word.trim();
+        clearResults();
+        setLoading(true);
+        errorMessage.style.display = 'none';
+
+        try {
+          const url = `${API_BASE}${ENDPOINT}?word=${encodeURIComponent(trimmed)}`;
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            let errMsg = `Server responded with ${response.status}`;
+            try {
+              const errJson = await response.json();
+              if (errJson.details) errMsg = errJson.details;
+              else if (errJson.error) errMsg = errJson.error;
+            } catch (_) { /* ignore */ }
+            throw new Error(errMsg);
+          }
+
+          const data = await response.json();
+          renderTranslations(data);
+        } catch (err) {
+          showError(err.message || 'Network error. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      // Event listeners
+      searchBtn.addEventListener('click', () => {
+        performSearch(wordInput.value);
+      });
+
+      wordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          performSearch(wordInput.value);
+        }
+      });
+
+      // Optionally auto-focus
+      wordInput.focus();
+
+      // On page load, show a default message
+      clearResults();
+      noResults.style.display = 'block';
+      noResults.innerHTML = `<i class="fas fa-search" style="font-size: 2rem; display: block; margin-bottom: 12px; opacity: 0.4;"></i> Enter a word to see translations`;
+    })();
+  </script>
+</body>
+</html>
